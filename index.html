@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кристалл Души</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #0d1b2a, #1b263b);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      color: #A0D8EF;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 16px;
+    }
+    input[type="date"], button {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
+    }
+    button {
+      background-color: #6ec1e4;
+      color: #000;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    .crystal {
+      margin: 20px 0;
+    }
+    .highlight {
+      background-color: #6ec1e4;
+      color: #000;
+      padding: 8px 12px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 0.95em;
+      color: #ccc;
+    }
+    .footer a {
+      color: #A0D8EF;
+      text-decoration: none;
+    }
+    .archetype-box {
+      margin-top: 10px;
+      font-size: 1.1em;
+      color: #A0D8EF;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      max-width: 300px;
+      margin: 30px auto 0;
+    }
+    .cell {
+      padding: 20px 0;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Кристалл Души</h1>
+    <p>Введи дату рождения, чтобы узнать свои энергии и архетип</p>
+    <input type="date" id="birthdate" />
+    <div class="archetype-box" id="archetypeBox"></div>
+    <button onclick="calculateCrystal()">Рассчитать</button>
+    <div class="result" id="result"></div>
+    <div class="grid">
+      <div class="cell" style="background:#b28ed2;">10</div>
+      <div class="cell" style="background:#c83d84;">11</div>
+      <div class="cell" style="background:#ff2ebc;">12</div>
+      <div class="cell" style="background:#0000ff;">7</div>
+      <div class="cell" style="background:#00cfff;">8</div>
+      <div class="cell" style="background:#701a82;">9</div>
+      <div class="cell" style="background:#c0ff3e;">4</div>
+      <div class="cell" style="background:#007f00;">5</div>
+      <div class="cell" style="background:#3ee8e3;">6</div>
+      <div class="cell" style="background:#ff0000;">1</div>
+      <div class="cell" style="background:#ffa500;">2</div>
+      <div class="cell" style="background:#ffff00;">3</div>
+    </div>
+    <div class="footer">
+      За подробностями обращайтесь <a href="https://taplink.cc/numero_soul" target="_blank">сюда</a>
+    </div>
+  </div>
+
+  <script>
+    const archetypes = [
+      'Деятель', 'Партнер', 'Профессионал', 'Организатор', 'Спасатель', 'Мастер',
+      'Управленец', 'Соратник', 'Новатор', 'Наставник', 'Вдохновитель', 'Создатель'
+    ];
+
+    function reduceTo12(num) {
+      while (num > 12) {
+        num = num.toString().split('').reduce((a, b) => a + +b, 0);
+      }
+      return num === 0 ? 12 : num;
+    }
+
+    function calculateCrystal() {
+      const dateStr = document.getElementById('birthdate').value;
+      if (!dateStr) return;
+      const nums = dateStr.split('-').join('').split('').map(Number);
+      const first = reduceTo12(nums[0] + nums[1]);
+      const second = reduceTo12(nums[2] + nums[3]);
+      const third = reduceTo12(nums.slice(4).reduce((a, b) => a + b, 0));
+      const archetypeNum = reduceTo12(nums.reduce((a, b) => a + b, 0));
+      const archetype = archetypes[archetypeNum - 1];
+
+      document.getElementById('archetypeBox').innerHTML = `Архетип: <strong>${archetype} (${archetypeNum})</strong>`;
+
+      document.getElementById('result').innerHTML =
+        `<div class="crystal">
+          <p><strong>Энергии:</strong> ${first}, ${second}, ${third}</p>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
