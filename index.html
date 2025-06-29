@@ -4,124 +4,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Кристалл Души</title>
+  <title>Калькулятор Кристалла Души</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f6f6f6;
+      background: #fdf6fd;
       text-align: center;
-      padding: 30px;
+      padding: 40px;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
       background: white;
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
     h1 {
-      color: #6a1b9a;
+      color: #b75fc6;
     }
     input, button {
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 1em;
-      width: 100%;
+      padding: 12px;
+      font-size: 1.1em;
+      width: 80%;
+      margin-top: 10px;
       border-radius: 10px;
       border: 1px solid #ccc;
     }
-    button {
-      background: #6a1b9a;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
+    table {
+      margin-top: 30px;
+      width: 100%;
+      border-collapse: collapse;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 20px;
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
     }
-    .cell {
-      padding: 25px 0;
-      font-weight: bold;
-      font-size: 1.3em;
-      border-radius: 10px;
-      color: #000;
-    }
-    .archetype {
-      margin-top: 10px;
-      color: #6a1b9a;
-      font-weight: bold;
+    tr:nth-child(even) {
+      background: #f9f9f9;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Кристалл Души</h1>
-    <p>Введи дату рождения:</p>
-    <input type="date" id="birthdate" />
+    <h1>Калькулятор Кристалла Души</h1>
+    <input type="text" id="birthdate" placeholder="Введите дату рождения (ДД.ММ.ГГГГ)" />
     <button onclick="calculateCrystal()">Рассчитать</button>
-    <div class="archetype" id="archetypeBox"></div>
-    <div class="grid" id="energyGrid"></div>
-    <p style="margin-top: 20px;">За подробностями обращайтесь: <a href="https://taplink.cc/numero_soul" target="_blank">taplink.cc/numero_soul</a></p>
+    <div id="result"></div>
   </div>
 
   <script>
-    const archetypes = [
-      'Деятель', 'Партнер', 'Профессионал', 'Организатор', 'Спасатель', 'Мастер',
-      'Управленец', 'Соратник', 'Новатор', 'Наставник', 'Вдохновитель', 'Создатель'
-    ];
-    const energyColors = {
-      1: '#fe0000', 2: '#fd9100', 3: '#ffff00',
-      4: '#adff30', 5: '#158f06', 6: '#0b913d',
-      7: '#0000fe', 8: '#00a7fd', 9: '#701a82',
-      10: '#b28ed2', 11: '#c83d84', 12: '#ff2ebc'
-    };
+    function sumDigits(n) {
+      return n.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+    }
 
-    function reduceTo12(num) {
-      while (num > 12) {
-        num = num.toString().split('').reduce((a, b) => a + +b, 0);
-      }
-      return num === 0 ? 12 : num;
+    function reduceTo12(n) {
+      while (n > 12) n = sumDigits(n);
+      return n;
     }
 
     function calculateCrystal() {
-      const dateStr = document.getElementById('birthdate').value;
-      if (!dateStr) return;
-      const [year, month, day] = dateStr.split('-').map(Number);
-
-      const d = reduceTo12(day);
-      const m = reduceTo12(month);
-      const y = reduceTo12(year.toString().split('').reduce((a, b) => a + +b, 0));
-
-      const p1 = d, p2 = m, p3 = y;
-      const p4 = reduceTo12(p1 + p2);
-      const p5 = reduceTo12(p1 + p3);
-      const p6 = reduceTo12(p2 + p3);
-      const p7 = reduceTo12(p4 + p5);
-      const p8 = reduceTo12(p4 + p6);
-      const p9 = reduceTo12(p5 + p6);
-      const p10 = reduceTo12(p7 + p8);
-      const p11 = reduceTo12(p7 + p9);
-      const p12 = reduceTo12(p8 + p9);
-
-      const energyGrid = [p10, p11, p12, p7, p8, p9, p4, p5, p6, p1, p2, p3];
-
-      const grid = document.getElementById('energyGrid');
-      grid.innerHTML = '';
-      for (let val of energyGrid) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.style.backgroundColor = energyColors[val];
-        cell.innerText = val;
-        grid.appendChild(cell);
+      const input = document.getElementById('birthdate').value;
+      const parts = input.split('.');
+      if (parts.length !== 3) {
+        alert('Введите дату в формате ДД.ММ.ГГГГ');
+        return;
       }
 
-      const archetypeVal = reduceTo12(day + month + year.toString().split('').reduce((a, b) => a + +b, 0));
-      document.getElementById('archetypeBox').innerText = `Архетип: ${archetypes[archetypeVal - 1]} (${archetypeVal})`;
+      let [day, month, year] = parts.map(n => parseInt(n));
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        alert('Дата должна содержать только числа');
+        return;
+      }
+
+      let A = reduceTo12(day);
+      let B = reduceTo12(month);
+      let C = reduceTo12(year);
+      let rows = [[A, B, C]];
+
+      for (let i = 1; i < 24; i++) {
+        const prev = rows[i - 1];
+        const nextA = reduceTo12(prev[0] + prev[1]);
+        const nextB = reduceTo12(prev[0] + prev[2]);
+        const nextC = reduceTo12(prev[1] + prev[2]);
+        rows.push([nextA, nextB, nextC]);
+      }
+
+      let html = '<table><tr><th>Строка</th><th>A</th><th>B</th><th>C</th></tr>';
+      rows.forEach((row, i) => {
+        html += `<tr><td>${i+1}</td><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`;
+      });
+      html += '</table>';
+
+      document.getElementById('result').innerHTML = html;
     }
   </script>
 </body>
