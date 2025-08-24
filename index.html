@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Кристалл Души — Калькулятор</title>
+<style>
+  :root{--bg:#0f1220;--panel:#131937;--ink:#eaf2ff;--muted:#a9b6d3;--radius:16px;--shadow:0 8px 30px rgba(0,0,0,.35)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:radial-gradient(1200px 800px at 70% -10%,#1b2250,transparent),var(--bg);color:var(--ink)}
+  .wrap{max-width:980px;margin:auto;padding:28px}
+  h1{margin:0 0 16px;font-weight:800;letter-spacing:.2px}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel{padding:16px;margin-bottom:14px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input[type="date"]{width:100%;max-width:280px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#0e1330;color:#eaf2ff}
+  .controls{display:flex;gap:10px;margin-top:12px}
+  button{appearance:none;border:0;padding:10px 14px;border-radius:12px;background:#1b7be0;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(27,123,224,.35)}
+  button.secondary{background:#2a305a;color:#d2defc;border:1px solid rgba(255,255,255,.1);box-shadow:none}
+
+  .vy{margin-top:12px;font-size:15px}
+  .vy .pill{display:inline-block;padding:8px 12px;border-radius:999px;background:#121836;border:1px solid rgba(255,255,255,.12);font-weight:800}
+
+  .matrix{display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:12px;padding:16px}
+  .cell{position:relative;border-radius:14px;padding:18px;text-align:center;font-weight:800;font-size:28px;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),0 6px 20px rgba(0,0,0,.35)}
+  .cell small{position:absolute;left:10px;top:8px;font:700 12px/1 system-ui;color:rgba(255,255,255,.9)}
+  /* цвета 1–12 */
+  .c1{background:#ff2a2a}.c2{background:#ff8c24}.c3{background:#ffd325;color:#3b2f00}.c4{background:#b7ff47;color:#10360c}
+  .c5{background:#1f7a39}.c6{background:#50d4cf;color:#082b2a}.c7{background:#2f69ff}.c8{background:#9bd0ff;color:#0a2340}
+  .c9{background:#7f46d7}.c10{background:#d47fcf}.c11{background:#ff4ca3}.c12{background:#ffb6cf;color:#35121e}
+
+  .results{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:14px;padding:16px}
+  .result{padding:14px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08)}
+  .result h3{margin:0 0 8px;font-size:16px}
+  .code{display:inline-block;padding:8px 12px;border-radius:999px;background:#121836;border:1px solid rgba(255,255,255,.12);font-weight:800;letter-spacing:.5px}
+  @media (max-width:720px){.results{grid-template-columns:1fr}.matrix{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Кристалл Души — Калькулятор</h1>
+
+  <div class="card panel">
+    <label>Дата рождения</label>
+    <input id="date" type="date" />
+    <div class="controls">
+      <button id="calcBtn">Рассчитать</button>
+      <button class="secondary" id="demoBtn">Пример</button>
+    </div>
+    <!-- ВЯ над матрицей — одно число -->
+    <div class="vy">Уровень Высшего Я: <span class="pill" id="vy_num"></span></div>
+  </div>
+
+  <div class="card" id="grid">
+    <div id="matrix" class="matrix"></div>
+  </div>
+
+  <div class="card results">
+    <div class="result"><h3>Активация торсионного поля</h3><div class="code" id="code_torsion"></div></div>
+    <div class="result"><h3>Активация тела света</h3><div class="code" id="code_light"></div></div>
+    <div class="result"><h3>Активация индивидуальной души</h3><div class="code" id="code_soul"></div></div>
+  </div>
+</div>
+
+<script>
+/* ===== Утилиты ===== */
+const sumDigits = n => String(n).split("").reduce((a,b)=>a+Number(b),0);
+const reduce12  = n => { n = Number(n)||0; while(n>12){ n=sumDigits(n); } return n===0?12:n; };
+const reduce9   = n => { n = Number(n)||0; while(n>9){  n=sumDigits(n); } return n===0?9:n; };
+const color     = v => `c${v}`;
+
+/* ===== Матрица (П1…П12) ===== */
+function buildMatrix(d,m,y){
+  const P1=reduce12(d), P2=reduce12(m), P3=reduce12(sumDigits(y));
+  const P4=reduce12(P1+P2), P5=reduce12(P1+P3), P6=reduce12(P2+P3);
+  const P7=reduce12(P4+P5), P8=reduce12(P4+P6), P9=reduce12(P5+P6);
+  const P10=reduce12(P7+P8), P11=reduce12(P7+P9), P12=reduce12(P8+P9);
+  return [P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12];
+}
+
+function renderMatrix(P){
+  const el = document.getElementById('matrix'); el.innerHTML='';
+  // порядок вывода: снизу вверх (П1..П3 → П10..П12)
+  const order = [9,10,11, 6,7,8, 3,4,5, 0,1,2];
+  const labels = ["П10","П11","П12","П7","П8","П9","П4","П5","П6","П1","П2","П3"];
+  order.forEach((idx,i)=>{
+    const v = P[idx];
+    const d = document.createElement('div');
+    d.className = `cell ${color(v)}`;
+    d.innerHTML = `<small>${labels[i]}</small>${v}`;
+    el.appendChild(d);
+  });
+}
+
+/* ===== Коды (нижние блоки — только троичные) ===== */
+function codes(P){
+  const [P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12] = P;
+
+  // Торсионное поле: (ДМ, ММ, ДМ+ММ)
+  const DM = reduce12(P8+P10+P12);
+  const MM = reduce12(P1+P3+P5);
+  const TK = reduce12(DM+MM);
+  const code_torsion = [DM, MM, TK];
+
+  // Тело Света: (Верх, Низ, Сумма)
+  const TOP = reduce12(P7+P9+P11);
+  const BOT = reduce12(P2+P4+P6);
+  const SUM = reduce12(TOP+BOT);
+  const code_light = [TOP, BOT, SUM];
+
+  // Индивидуальная душа: (П8, П5+П8, П5)
+  const S = reduce12(P5 + P8);
+  const code_soul = [P8, S, P5];
+
+  return {code_torsion, code_light, code_soul};
+}
+
+/* ===== ВЯ (одно число, без свёртки к 12) ===== */
+function computeVY(D,M,Y){
+  // День и месяц — как есть; год = столетие + (последние две цифры сведённые до 9)
+  const century = Math.floor(Y/100);    // 19 или 20
+  const duo9    = reduce9(Y % 100);     // 00..99 → 1..9
+  return (Number(D)||0) + (Number(M)||0) + century + duo9;
+}
+
+/* ===== I/O ===== */
+function getInput(){
+  const ds = document.getElementById('date').value;
+  if(!ds) throw new Error('Укажите дату рождения.');
+  const [y,m,d] = ds.split('-').map(Number);
+  return {D:d,M:m,Y:y};
+}
+
+function run(){
+  try{
+    const {D,M,Y} = getInput();
+    const P = buildMatrix(D,M,Y);
+    renderMatrix(P);
+
+    // ВЯ вверху — одно число
+    document.getElementById('vy_num').textContent = computeVY(D,M,Y);
+
+    // Три троичных кода внизу
+    const C = codes(P);
+    document.getElementById('code_torsion').textContent = C.code_torsion.join(', ');
+    document.getElementById('code_light').textContent   = C.code_light.join(', ');
+    document.getElementById('code_soul').textContent    = C.code_soul.join(', ');
+  }catch(e){ alert(e.message); }
+}
+
+/* кнопки */
+document.getElementById('calcBtn').addEventListener('click', run);
+document.getElementById('demoBtn').addEventListener('click', ()=>{
+  document.getElementById('date').value = '1969-05-22'; // пример 22.05.1969
+  run();
+});
+
+/* автозапуск примером */
+window.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('date').value = '1969-05-22';
+  run();
+});
+</script>
+</body>
+</html>
