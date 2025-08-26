@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Кристалл Души — Калькулятор</title>
+  <style>
+    :root{
+      --bg:#0f1220; --panel:#131937; --ink:#eaf2ff;
+      --radius:12px; --gap:10px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,Arial,sans-serif;
+      background:var(--bg); color:var(--ink);
+      display:flex; justify-content:center; padding:20px;
+    }
+    .wrap{width:100%; max-width:480px}
+    h1{margin:0 0 14px; text-align:center; line-height:1.15}
+    .panel{background:var(--panel); border-radius:var(--radius); padding:16px; margin-bottom:16px}
+    label{display:block; margin-bottom:6px; font-size:14px}
+    input[type="date"]{width:100%; padding:10px; border-radius:8px; border:1px solid #586; background:#fff; color:#000; font-size:16px}
+    .controls{display:flex; gap:10px; margin-top:12px}
+    button{flex:1; padding:12px 14px; border:0; border-radius:10px; font-weight:700; cursor:pointer}
+    .primary{background:#2a74ff; color:#fff}
+    .secondary{background:#6f7481; color:#fff}
+    .vy{margin-top:10px; text-align:center; font-size:18px}
+
+    /* Матрица */
+    .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0}
+    .cell{
+      position:relative; aspect-ratio:1/1; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:28px; color:#000;
+      border:2px solid rgba(0,0,0,.12); box-shadow:0 6px 12px rgba(0,0,0,.25)
+    }
+    .cell small{position:absolute; left:6px; top:5px; font:700 11px/1 system-ui; color:rgba(0,0,0,.6)}
+    /* цвета */
+    .c1 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ff6a6a,#e51e1e)}
+    .c2 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ffb266,#ff7f1f)}
+    .c3 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ffe88a,#ffd025)}
+    .c4 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#d8ff7e,#a7ef38)}
+    .c5 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#4fc06b,#1b7a39)}
+    .c6 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#9be7e4,#50d4cf)}
+    .c7 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#7eb0ff,#2f69ff)}
+    .c8 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#cfe8ff,#9bd0ff)}
+    .c9 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#b98bf0,#7f46d7)}
+    .c10{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#f6b0e7,#d47fcf)}
+    .c11{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#ff91c7,#ff4ca3)}
+    .c12{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.65),transparent 70%),linear-gradient(#ffd3df,#ffb6cf)}
+
+    .codes{background:var(--panel); border-radius:var(--radius); padding:16px; margin-top:8px}
+    .codes h3{margin:0 0 8px; text-align:center}
+    .codes p{margin:6px 0; text-align:center}
+
+    /* Инструкция */
+    .howto{background:var(--panel); border-radius:var(--radius); padding:16px; margin-top:16px}
+    .howto h2{margin:0 0 8px; text-align:center; font-size:18px}
+    .howto h3{margin:12px 0 6px; font-size:16px}
+    .howto ul{margin:0 0 8px 18px}
+    .chip{display:inline-block; padding:.15rem .5rem; border-radius:999px; background:#24305a; color:#fff; font-weight:700}
+
+    /* принт/пдф белая тема */
+    .print-white{background:#fff; color:#000}
+    .print-white .panel,.print-white .codes,.print-white .howto{background:#f7f8fa; color:#000}
+    .print-white .cell{box-shadow:none; border:1px solid #ccc}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="capture">
+    <h1>Кристалл Души — Калькулятор</h1>
+
+    <div class="panel">
+      <label for="date">Дата рождения</label>
+      <input type="date" id="date"/>
+      <div class="controls">
+        <button class="primary" id="calcBtn">Рассчитать</button>
+        <button class="secondary" id="pdfBtn">Скачать PDF</button>
+      </div>
+    </div>
+
+    <div id="vy" class="vy"></div>
+
+    <div id="matrix" class="grid"></div>
+
+    <div class="codes" id="codes"></div>
+
+    <div class="howto" id="howto"></div>
+  </div>
+
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <script>
+    // ===== helpers =====
+    const colorClass = i => "c"+(i||12);
+    const reduce12 = (n)=>{ while(n>12) n = String(n).split("").reduce((a,b)=>a+ +b,0); return n||12; };
+    const sum12 = (...xs)=> reduce12(xs.reduce((a,b)=>a+b,0));
+
+    // ===== core calc from date -> P1..P12 =====
+    function buildPositions(iso){ // "YYYY-MM-DD"
+      const [Y,M,D] = iso.split("-");
+      const day = +D, month = +M, yearSum = Y.split("").reduce((a,b)=>a+ +b,0);
+      const P = Array(13).fill(0);
+      P[1] = reduce12(day);
+      P[2] = reduce12(month);
+      P[3] = reduce12(yearSum);
+
+      P[4] = reduce12(P[1]+P[2]);
+      P[5] = reduce12(P[1]+P[3]);
+      P[6] = reduce12(P[2]+P[3]);
+
+      P[7] = reduce12(P[4]+P[5]);
+      P[8] = reduce12(P[4]+P[6]);
+      P[9] = reduce12(P[5]+P[6]);
+
+      P[10]= reduce12(P[7]+P[8]);
+      P[11]= reduce12(P[7]+P[9]);
+      P[12]= reduce12(P[8]+P[9]);
+
+      // Высшее Я (как на твоем сайте): день + месяц + сумма цифр года (без свертки)
+      const VY = day + month + yearSum;
+
+      return {P, VY, raw:{day,month,yearSum}};
+    }
+
+    // ===== render matrix =====
+    function renderMatrix(P){
+      const order = [[10,11,12],[7,8,9],[4,5,6],[1,2,3]];
+      let html = "";
+      order.forEach(row=>{
+        row.forEach(i=>{
+          html += `<div class="cell ${colorClass(P[i])}"><small>П${i}</small>${P[i]}</div>`;
+        });
+      });
+      document.getElementById("matrix").innerHTML = html;
+    }
+
+    // ===== codes & instruction =====
+    function renderCodesAndHowTo(P){
+      // троичные коды
+      const MM = sum12(P[1],P[3],P[5]);           // материальная меркаба
+      const DM = sum12(P[8],P[10],P[12]);         // духовная меркаба
+      const torsion = [DM, MM, sum12(DM,MM)];
+
+      const topL = sum12(P[7],P[9],P[11]);        // верх
+      const botL = sum12(P[2],P[4],P[6]);         // низ
+      const light = [topL, botL, sum12(topL,botL)];
+
+      const soul = [P[8], sum12(P[5],P[8]), P[5]];
+
+      // вывод кодов
+      document.getElementById("codes").innerHTML = `
+        <h3>Троичные коды</h3>
+        <p>Активация торсионного поля: <b>${torsion.join(", ")}</b></p>
+        <p>Активация тела света: <b>${light.join(", ")}</b></p>
+        <p>Активация индивидуальной души: <b>${soul.join(", ")}</b></p>
+      `;
+
+      // инструкция (описание + только результаты)
+      const N1 = P[5], N2 = P[8], N3 = sum12(P[5],P[8]);
+      const C1 = botL, C2 = topL, C3 = sum12(C1,C2);
+      const T1 = torsion[0], T2 = torsion[1], T3 = torsion[2];
+
+      document.getElementById("howto").innerHTML = `
+        <h2>Инструкция к кодам</h2>
+
+        <h3>1. Активация Кристалла Души</h3>
+        <ul>
+          <li>«Вдыхаю Свет — Выдыхаю Любовь»: ладони в намасте, вдох из центра головы в Высшее сердце, выдох — раскрывая руки и излучая золотой свет. <span class="chip">N1 = ${N1} раз</span></li>
+          <li>«Вдыхаю Силу — Выдыхаю Волю»: из солнечного сплетения к Тимусу — и выдох золотого света на раскрытых руках. <span class="chip">N2 = ${N2} раз</span></li>
+          <li>Простукивание точки Тимуса со звуком «аа». <span class="chip">N3 = ${N3} раз</span></li>
+        </ul>
+
+        <h3>2. Запуск торсионного поля</h3>
+        <ul>
+          <li>Верхняя воронка: вращение по часовой стрелке, руки вверх. <span class="chip">T1 = ${T1} раз</span></li>
+          <li>Нижняя воронка: вращение против часовой стрелки, руки вниз. <span class="chip">T2 = ${T2} раз</span></li>
+          <li>Гармонизация: руки в стороны на уровне груди. <span class="chip">T3 = ${T3} раз</span></li>
+        </ul>
+
+        <h3>3. Интеграция Тела Света</h3>
+        <ul>
+          <li>Одновременные круги руками вперёд. <span class="chip">C1 = ${C1} раз</span></li>
+          <li>Одновременные круги руками назад. <span class="chip">C2 = ${C2} раз</span></li>
+          <li>Фиксация: ладони в намасте на груди, мягкое надавливание ладонями друг на друга. <span class="chip">C3 = ${C3} раз</span></li>
+        </ul>
+      `;
+
+      return {torsion, light, soul, N1,N2,N3,C1,C2,C3};
+    }
+
+    function calc(){
+      const el = document.getElementById("date");
+      if(!el.value){ el.valueAsDate = new Date(); }
+      const iso = el.value;
+      const {P,VY} = buildPositions(iso);
+
+      document.getElementById("vy").innerHTML = `Уровень Высшего Я: <b>${VY}</b>`;
+      renderMatrix(P);
+      renderCodesAndHowTo(P);
+    }
+
+    document.getElementById("calcBtn").onclick = calc;
+
+    // ===== PDF (светлая версия) =====
+    document.getElementById("pdfBtn").onclick = ()=>{
+      // клонируем, включаем «белую» тему только для PDF
+      const node = document.getElementById("capture").cloneNode(true);
+      node.classList.add("print-white");
+      html2pdf().from(node).set({
+        margin:0.5,
+        filename:"Kristall_Dushi.pdf",
+        html2canvas:{scale:2},
+        jsPDF:{unit:"in", format:"a4", orientation:"portrait"}
+      }).save();
+    };
+
+    // авто-инициализация (сегодняшняя дата)
+    (function init(){
+      const d = document.getElementById("date");
+      if(!d.value) d.valueAsDate = new Date();
+      calc();
+    })();
+  </script>
+</body>
+</html>
