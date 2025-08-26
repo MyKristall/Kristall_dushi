@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Кристалл Души — Калькулятор</title>
+  <style>
+    :root{--bg:#0f1220; --panel:#131937; --ink:#eaf2ff; --radius:12px}
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,Arial,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px}
+    .wrap{width:100%; max-width:520px}
+    h1{margin:0 0 14px; text-align:center; line-height:1.15}
+    .row{display:flex; gap:8px; align-items:end}
+    .grow{flex:1}
+    .panel{background:var(--panel); border-radius:var(--radius); padding:16px; margin-bottom:16px}
+    label{display:block; margin-bottom:6px; font-size:14px}
+    input[type="date"], select{width:100%; padding:10px; border-radius:8px; border:1px solid #586; background:#fff; color:#000; font-size:16px}
+    .controls{display:flex; gap:10px; margin-top:12px}
+    button{flex:1; padding:12px 14px; border:0; border-radius:10px; font-weight:700; cursor:pointer}
+    .primary{background:#2a74ff; color:#fff}
+    .secondary{background:#6f7481; color:#fff}
+    .vy{margin-top:10px; text-align:center; font-size:18px}
+
+    /* Матрица */
+    .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0}
+    .cell{
+      position:relative; aspect-ratio:1/1; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:28px; color:#000;
+      border:2px solid rgba(0,0,0,.12); box-shadow:0 6px 12px rgba(0,0,0,.25)
+    }
+    .cell small{position:absolute; left:6px; top:5px; font:700 11px/1 system-ui; color:rgba(0,0,0,.6)}
+    /* цвета */
+    .c1 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ff6a6a,#e51e1e)}
+    .c2 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ffb266,#ff7f1f)}
+    .c3 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#ffe88a,#ffd025)}
+    .c4 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#d8ff7e,#a7ef38)}
+    .c5 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#4fc06b,#1b7a39)}
+    .c6 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#9be7e4,#50d4cf)}
+    .c7 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#7eb0ff,#2f69ff)}
+    .c8 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#cfe8ff,#9bd0ff)}
+    .c9 {background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55),transparent 70%),linear-gradient(#b98bf0,#7f46d7)}
+    .c10{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#f6b0e7,#d47fcf)}
+    .c11{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.6),transparent 70%),linear-gradient(#ff91c7,#ff4ca3)}
+    .c12{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.65),transparent 70%),linear-gradient(#ffd3df,#ffb6cf)}
+
+    .codes{background:var(--panel); border-radius:var(--radius); padding:16px; margin-top:8px}
+    .codes h3{margin:0 0 8px; text-align:center}
+    .codes p{margin:6px 0; text-align:center}
+
+    .howto{background:var(--panel); border-radius:var(--radius); padding:16px; margin-top:16px}
+    .howto h2{margin:0 0 8px; text-align:center; font-size:18px}
+    .howto h3{margin:12px 0 6px; font-size:16px}
+    .howto ul{margin:0 0 8px 18px}
+    .chip{display:inline-block; padding:.15rem .5rem; border-radius:999px; background:#24305a; color:#fff; font-weight:700}
+
+    /* принт/пдф белая тема */
+    .print-white{background:#fff; color:#000}
+    .print-white .panel,.print-white .codes,.print-white .howto{background:#f7f8fa; color:#000}
+    .print-white .cell{box-shadow:none; border:1px solid #ccc}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="capture">
+    <h1 id="t_title">Кристалл Души — Калькулятор</h1>
+
+    <div class="panel">
+      <div class="row">
+        <div class="grow">
+          <label id="t_birthdate" for="date">Дата рождения</label>
+          <input type="date" id="date"/>
+        </div>
+        <div>
+          <label id="t_language">Язык</label>
+          <select id="lang">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="calcBtn">Рассчитать</button>
+        <button class="secondary" id="pdfBtn">Скачать PDF</button>
+      </div>
+    </div>
+
+    <div id="vy" class="vy"></div>
+
+    <div id="matrix" class="grid"></div>
+
+    <div class="codes" id="codes"></div>
+
+    <div class="howto" id="howto"></div>
+  </div>
+
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <script>
+    /* ========== i18n ========== */
+    const I18N = {
+      ru: {
+        title: "Кристалл Души — Калькулятор",
+        birthdate: "Дата рождения",
+        language: "Язык",
+        calcBtn: "Рассчитать",
+        pdfBtn: "Скачать PDF",
+        vy: d => `Уровень Высшего Я: <b>${d}</b>`,
+        triTitle: "Троичные коды",
+        torsion: "Активация торсионного поля",
+        light: "Активация тела света",
+        soul: "Активация индивидуальной души",
+        howtoTitle: "Инструкция к кодам",
+        a1: "1. Активация Кристалла Души",
+        a1_1: (n)=> `«Вдыхаю Свет — Выдыхаю Любовь»: ладони в намастэ, вдох из центра головы в Высшее сердце, выдох — раскрывая руки и излучая золотой свет. <span class="chip">N1 = ${n} раз</span>`,
+        a1_2: (n)=> `«Вдыхаю Силу — Выдыхаю Волю»: из солнечного сплетения к Тимусу — и выдох золотого света на раскрытых руках. <span class="chip">N2 = ${n} раз</span>`,
+        a1_3: (n)=> `Простукивание точки Тимуса со звуком «аа». <span class="chip">N3 = ${n} раз</span>`,
+        a2: "2. Запуск торсионного поля",
+        a2_1: (n)=> `Верхняя воронка: вращение по часовой стрелке, руки вверх. <span class="chip">T1 = ${n} раз</span>`,
+        a2_2: (n)=> `Нижняя воронка: вращение против часовой стрелки, руки вниз. <span class="chip">T2 = ${n} раз</span>`,
+        a2_3: (n)=> `Для гармонизации потоков земной и небесной энергии сложи руки в намастэ на груди и выполни прыжки. <span class="chip">T3 = ${n} раз</span> <span style="opacity:.75">(или резкие подъёмы с пятки на носок)</span>`,
+        a3: "3. Интеграция Тела Света",
+        a3_1: (n)=> `Одновременные круги руками вперёд. <span class="chip">C1 = ${n} раз</span>`,
+        a3_2: (n)=> `Одновременные круги руками назад. <span class="chip">C2 = ${n} раз</span>`,
+        a3_3: (n)=> `Фиксация: ладони в намастэ на груди, мягкое надавливание ладонями друг на друга. <span class="chip">C3 = ${n} раз</span>`
+      },
+      en: {
+        title: "Soul Crystal — Calculator",
+        birthdate: "Date of birth",
+        language: "Language",
+        calcBtn: "Calculate",
+        pdfBtn: "Download PDF",
+        vy: d => `Higher Self Level: <b>${d}</b>`,
+        triTitle: "Triadic Codes",
+        torsion: "Torsion Field Activation",
+        light: "Light Body Activation",
+        soul: "Individual Soul Activation",
+        howtoTitle: "Instructions for Codes",
+        a1: "1. Crystal of the Soul Activation",
+        a1_1: (n)=> `“I inhale Light — I exhale Love”: palms in namasté, inhale from head center to the Higher Heart, exhale with arms opening, radiating golden light. <span class="chip">N1 = ${n} times</span>`,
+        a1_2: (n)=> `“I inhale Power — I exhale Will”: draw fire from the solar plexus to the Thymus, exhale golden light with arms open. <span class="chip">N2 = ${n} times</span>`,
+        a1_3: (n)=> `Tap the Thymus point with a long “aa” sound. <span class="chip">N3 = ${n} times</span>`,
+        a2: "2. Torsion Field Start",
+        a2_1: (n)=> `Upper vortex: clockwise rotation, arms up. <span class="chip">T1 = ${n} times</span>`,
+        a2_2: (n)=> `Lower vortex: counter-clockwise rotation, arms down. <span class="chip">T2 = ${n} times</span>`,
+        a2_3: (n)=> `For harmonizing earth and heaven flows, place palms in namasté on the chest and perform jumps. <span class="chip">T3 = ${n} times</span> <span style="opacity:.75">(or quick heel-to-toe lifts)</span>`,
+        a3: "3. Light Body Integration",
+        a3_1: (n)=> `Simultaneous arm circles forward. <span class="chip">C1 = ${n} times</span>`,
+        a3_2: (n)=> `Simultaneous arm circles backward. <span class="chip">C2 = ${n} times</span>`,
+        a3_3: (n)=> `Fixation: palms in namasté on the chest, gentle pressure palms against each other. <span class="chip">C3 = ${n} times</span>`
+      }
+    };
+    let LANG = 'ru';
+    const $ = id => document.getElementById(id);
+    const t = (k, ...args) => (typeof I18N[LANG][k] === 'function' ? I18N[LANG][k](...args) : I18N[LANG][k]);
+
+    /* ========== helpers & math ========== */
+    const reduce12 = (n)=>{ while(n>12) n = String(n).split("").reduce((a,b)=>a+ +b,0); return n||12; };
+    const sum12 = (...xs)=> reduce12(xs.reduce((a,b)=>a+b,0));
+    const colorClass = i => "c"+(i||12);
+
+    function buildPositions(iso){ // "YYYY-MM-DD"
+      const [Y,M,D] = iso.split("-");
+      const day = +D, month = +M, yearSum = Y.split("").reduce((a,b)=>a+ +b,0);
+      const P = Array(13).fill(0);
+      P[1]=reduce12(day); P[2]=reduce12(month); P[3]=reduce12(yearSum);
+      P[4]=reduce12(P[1]+P[2]); P[5]=reduce12(P[1]+P[3]); P[6]=reduce12(P[2]+P[3]);
+      P[7]=reduce12(P[4]+P[5]); P[8]=reduce12(P[4]+P[6]); P[9]=reduce12(P[5]+P[6]);
+      P[10]=reduce12(P[7]+P[8]); P[11]=reduce12(P[7]+P[9]); P[12]=reduce12(P[8]+P[9]);
+      const VY = day + month + yearSum; // по твоему правилу ВЯ — без свёртки
+      return {P,VY};
+    }
+
+    function renderMatrix(P){
+      const order = [[10,11,12],[7,8,9],[4,5,6],[1,2,3]];
+      let html = "";
+      order.forEach(row=>{
+        row.forEach(i=>{
+          html += `<div class="cell ${colorClass(P[i])}"><small>П${i}</small>${P[i]}</div>`;
+        });
+      });
+      $("matrix").innerHTML = html;
+    }
+
+    function renderCodesAndHowTo(P){
+      // коды
+      const MM = sum12(P[1],P[3],P[5]);
+      const DM = sum12(P[8],P[10],P[12]);
+      const torsion = [DM, MM, sum12(DM,MM)];
+
+      const topL = sum12(P[7],P[9],P[11]);
+      const botL = sum12(P[2],P[4],P[6]);
+      const light = [topL, botL, sum12(topL,botL)];
+
+      const soul = [P[8], sum12(P[5],P[8]), P[5]];
+
+      $("codes").innerHTML = `
+        <h3>${t('triTitle')}</h3>
+        <p>${t('torsion')}: <b>${torsion.join(", ")}</b></p>
+        <p>${t('light')}: <b>${light.join(", ")}</b></p>
+        <p>${t('soul')}: <b>${soul.join(", ")}</b></p>
+      `;
+
+      // инструкция (описания + только результаты)
+      const N1=P[5], N2=P[8], N3=sum12(P[5],P[8]);
+      const C1=botL, C2=topL, C3=sum12(C1,C2);
+      const T1=torsion[0], T2=torsion[1], T3=torsion[2];
+
+      $("howto").innerHTML = `
+        <h2>${t('howtoTitle')}</h2>
+
+        <h3>${t('a1')}</h3>
+        <ul>
+          <li>${t('a1_1')(N1)}</li>
+          <li>${t('a1_2')(N2)}</li>
+          <li>${t('a1_3')(N3)}</li>
+        </ul>
+
+        <h3>${t('a2')}</h3>
+        <ul>
+          <li>${t('a2_1')(T1)}</li>
+          <li>${t('a2_2')(T2)}</li>
+          <li>${t('a2_3')(T3)}</li>
+        </ul>
+
+        <h3>${t('a3')}</h3>
+        <ul>
+          <li>${t('a3_1')(C1)}</li>
+          <li>${t('a3_2')(C2)}</li>
+          <li>${t('a3_3')(C3)}</li>
+        </ul>
+      `;
+    }
+
+    function calc(){
+      const el = $("date");
+      if(!el.value){ el.valueAsDate = new Date(); }
+      const {P,VY} = buildPositions(el.value);
+      $("t_title").textContent = t('title');
+      $("t_birthdate").textContent = t('birthdate');
+      $("t_language").textContent = t('language');
+      $("calcBtn").textContent = t('calcBtn');
+      $("pdfBtn").textContent = t('pdfBtn');
+
+      $("vy").innerHTML = t('vy')(VY);
+      renderMatrix(P);
+      renderCodesAndHowTo(P);
+    }
+
+    // язык
+    $("lang").addEventListener("change", (e)=>{ LANG = e.target.value; calc(); });
+
+    $("calcBtn").onclick = calc;
+
+    // PDF (светлая версия на текущем языке)
+    $("pdfBtn").onclick = ()=>{
+      const node = $("capture").cloneNode(true);
+      node.classList.add("print-white");
+      html2pdf().from(node).set({
+        margin:0.5,
+        filename:"Kristall_Dushi.pdf",
+        html2canvas:{scale:2},
+        jsPDF:{unit:"in", format:"a4", orientation:"portrait"}
+      }).save();
+    };
+
+    // авто-инициализация
+    (function init(){
+      if(!$("date").value) $("date").valueAsDate = new Date(1969,4,22); // пример, можно убрать
+      calc();
+    })();
+  </script>
+</body>
+</html>
