@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КРИСТАЛЛ ДУШИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f1220;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .glow {
+      color: #FFD700;
+      text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFA500;
+    }
+    .panel {
+      background: #131937;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 10px auto;
+      max-width: 420px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-size: 14px;
+      text-align: left;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+    }
+    .primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .secondary {
+      background: #6b7280;
+      color: white;
+    }
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 20px auto;
+      max-width: 300px;
+    }
+    .cell {
+      border-radius: 8px;
+      padding: 20px 0;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .codes, .instructions {
+      text-align: left;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 8px;
+      background: #1c2242;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <span id="t_reveal">РАСКРОЙ СВОЙ</span><br>
+    <span class="glow">КРИСТАЛЛ ДУШИ</span>
+  </h1>
+
+  <div class="panel">
+    <label id="t_birthdate" for="date">Дата рождения:</label>
+    <input type="date" id="date">
+
+    <label id="t_language" for="lang">Язык:</label>
+    <select id="lang">
+      <option value="ru">Русский</option>
+      <option value="en">English</option>
+    </select>
+
+    <button class="primary" id="btnCalc">Рассчитать</button>
+    <button class="secondary" id="btnPdf">Скачать PDF</button>
+  </div>
+
+  <h3 id="vy"></h3>
+  <div class="matrix" id="matrix"></div>
+
+  <div class="codes" id="codes"></div>
+  <div class="instructions" id="instructions"></div>
+
+<script>
+/* === Переводы === */
+const tr = {
+  ru: {
+    title: "РАСКРОЙ СВОЙ КРИСТАЛЛ ДУШИ",
+    reveal: "РАСКРОЙ СВОЙ",
+    birthdate: "Дата рождения:",
+    language: "Язык:",
+    calc: "Рассчитать",
+    pdf: "Скачать PDF",
+    vy: "Уровень Высшего Я",
+    codes: "Троичные коды",
+    instructions: "Инструкция к кодам",
+    part1: "1. Активация Кристалла Души",
+    part2: "2. Запуск торсионного поля",
+    part3: "3. Интеграция Тела Света"
+  },
+  en: {
+    title: "REVEAL YOUR SOUL CRYSTAL",
+    reveal: "REVEAL YOUR",
+    birthdate: "Birthdate:",
+    language: "Language:",
+    calc: "Calculate",
+    pdf: "Download PDF",
+    vy: "Higher Self Level",
+    codes: "Trinity Codes",
+    instructions: "Instruction for Codes",
+    part1: "1. Soul Crystal Activation",
+    part2: "2. Torsion Field Launch",
+    part3: "3. Light Body Integration"
+  }
+};
+
+/* === Вспомогательные функции === */
+function $(id){ return document.getElementById(id); }
+
+function parseDate(str){
+  if(!str) return null;
+  let [y,m,d] = str.split("-");
+  return d && m && y ? `${y}-${m}-${d}` : null;
+}
+
+/* === Отрисовка интерфейса на языке === */
+function applyTexts(){
+  const t = tr[LANG];
+  document.title = t.title;
+  $("t_reveal").textContent = t.reveal;
+  $("t_birthdate").textContent = t.birthdate;
+  $("t_language").textContent = t.language;
+  $("btnCalc").textContent = t.calc;
+  $("btnPdf").textContent = t.pdf;
+}
+
+/* === Пример расчёта (заглушка) === */
+function render(date){
+  $("vy").textContent = `${tr[LANG].vy}: 52`;
+  $("matrix").innerHTML = "";
+  for(let i=1;i<=12;i++){
+    const div = document.createElement("div");
+    div.className = "cell";
+    div.style.background = "#2d3748";
+    div.textContent = i;
+    $("matrix").appendChild(div);
+  }
+  $("codes").innerHTML = `<b>${tr[LANG].codes}:</b><br>
+    Активация торсионного поля: 2, 9, 7<br>
+    Активация тела света: 11, 3, 9<br>
+    Активация индивидуальной души: 7, 11, 7`;
+
+  $("instructions").innerHTML = `<b>${tr[LANG].instructions}</b><br><br>
+    <b>${tr[LANG].part1}</b><br>
+    • «Вдыхаю Свет — Выдыхаю Любовь» N1 = 3 раза<br>
+    • «Вдыхаю Силу — Выдыхаю Волю» N2 = 11 раз<br>
+    • Простукивание точки Тимуса N3 = 5 раз<br><br>
+    <b>${tr[LANG].part2}</b><br>
+    • Верхняя воронка T1 = 7 раз<br>
+    • Нижняя воронка T2 = 4 раза<br>
+    • Гармонизация (руки в намасте, прыжки) T3 = 11 раз<br><br>
+    <b>${tr[LANG].part3}</b><br>
+    • Круги руками вперёд C1 = 8 раз<br>
+    • Круги руками назад C2 = 5 раз<br>
+    • Фиксация (надавливание ладонями) C3 = 4 раза`;
+}
+
+/* === Обработчики === */
+let LANG = "ru";
+
+$("lang").addEventListener("change", ()=>{
+  LANG = $("lang").value;
+  localStorage.setItem("kristall_lang", LANG);
+  applyTexts();
+
+  const iso = parseDate($("date").value) || localStorage.getItem("kristall_date");
+  if (iso) render(iso);
+});
+
+$("btnCalc").addEventListener("click", ()=>{
+  const iso = parseDate($("date").value);
+  if (!iso) return;
+  localStorage.setItem("kristall_date", iso);
+  render(iso);
+});
+
+/* === Автозагрузка === */
+(function boot(){
+  LANG = localStorage.getItem("kristall_lang") ||
+         ((navigator.language||"en").toLowerCase().startsWith("ru") ? "ru" : "en");
+  $("lang").value = LANG;
+  applyTexts();
+
+  const iso = localStorage.getItem("kristall_date");
+  if (iso) {
+    $("date").value = iso;
+    render(iso);
+  }
+})();
+</script>
+</body>
+</html>
