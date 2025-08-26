@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>РАСКРОЙ СВОЙ КРИСТАЛЛ ДУШИ</title>
+
+<style>
+  :root{
+    --bg:#0f1220; --panel:#141b3a; --ink:#eef3ff; --muted:#9fb0d8;
+    --accent:#2d6ae0; --pill:#26335e; --ring:#34406a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  .wrap{max-width:980px;margin:auto;padding:22px}
+  h1{margin:6px 0 18px;text-align:center;line-height:1.2;
+     font-weight:800;font-size:clamp(24px,4.5vw,44px)}
+  .glow{color:#ffd966;text-shadow:0 0 6px #ffebb0,0 0 12px #ffd966,0 0 22px #ffcc33}
+  .panel{background:var(--panel);border-radius:16px;padding:16px;margin:14px 0}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .field{display:flex;align-items:center;gap:8px;background:#101735;border:1px solid var(--ring);
+         padding:10px 12px;border-radius:10px}
+  .field span{font-size:14px;color:var(--muted)}
+  input[type="date"], select{
+    background:transparent;border:0;color:var(--ink);font-size:16px;outline:none}
+  button{appearance:none;border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);color:#fff}
+  .secondary{background:#3b476f;color:#fff}
+  .badge{display:inline-block;background:#1a244d;border:1px solid var(--ring);
+         border-radius:999px;padding:8px 14px;margin:6px 0}
+  .matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:460px;margin:16px auto}
+  .cell{border-radius:14px;padding:28px 0;text-align:center;font-weight:800;font-size:24px;
+        color:#00110d;box-shadow:0 8px 20px rgba(0,0,0,.28)}
+  .c1 {background:#ff6b6b}.c2 {background:#ff994d}.c3 {background:#ffd54d}
+  .c4 {background:#b8ff6e}.c5 {background:#24a148;color:#eafff5}.c6 {background:#9ee5ff}
+  .c7 {background:#5294ff;color:#eef6ff}.c8 {background:#cfe5ff}.c9  {background:#9b6cff;color:#fff}
+  .c10{background:#cba6ff}.c11{background:#ff78c6}.c12{background:#ffc7d7}
+  .cards{display:grid;gap:12px}
+  .card h3{margin:4px 0 10px;text-align:center}
+  .codes p{margin:6px 0}
+  .howto p{margin:8px 0 12px}
+  .muted{color:var(--muted)}
+  .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .pill{background:var(--pill);border:1px solid var(--ring);border-radius:999px;padding:8px 12px}
+</style>
+
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1 id="title">РАСКРОЙ СВОЙ <span class="glow">КРИСТАЛЛ ДУШИ</span></h1>
+
+  <div class="panel">
+    <div class="controls">
+      <label class="field">
+        <span id="t_birthdate">Дата рождения</span>
+        <!-- теперь нативный календарик -->
+        <input type="date" id="date">
+      </label>
+      <label class="field">
+        <span id="t_language">Язык</span>
+        <select id="lang">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <button class="primary" id="btnCalc">Рассчитать</button>
+      <button class="secondary" id="btnPdf">Скачать PDF</button>
+    </div>
+  </div>
+
+  <div class="row"><div class="badge" id="vyBadge"></div></div>
+  <div class="matrix" id="matrix"></div>
+
+  <div class="cards">
+    <div class="panel codes" id="codes"></div>
+    <div class="panel howto" id="howto"></div>
+  </div>
+
+</div>
+
+<script>
+let LANG = 'ru';
+const tr = {
+  ru:{title:'РАСКРОЙ СВОЙ <span class="glow">КРИСТАЛЛ ДУШИ</span>',
+      birthdate:'Дата рождения',language:'Язык',calc:'Рассчитать',pdf:'Скачать PDF',
+      vy:v=>`Уровень Высшего Я: ${v}`, codesTitle:'Троичные коды',
+      torsion:'Активация торсионного поля', light:'Активация тела света',
+      soul:'Активация индивидуальной души', howtoTitle:'Инструкция к кодам',
+      a1:'1) АКТИВАЦИЯ КРИСТАЛЛА ДУШИ',
+      a1_1:n=>`«Вдыхаю Свет — Выдыхаю Любовь». N1 = ${n} раз.`,
+      a1_2:n=>`«Вдыхаю Силу — Выдыхаю Волю». N2 = ${n} раз.`,
+      a1_3:n=>`Простукивание точки Тимуса со звуком «аа». N3 = ${n} раз.`,
+      a2:'2) ЗАПУСК ТОРСИОННОГО ПОЛЯ',
+      a2_1:n=>`Верхняя воронка (по часовой, руки вверх). T1 = ${n} раз.`,
+      a2_2:n=>`Нижняя воронка (против часовой, руки вниз). T2 = ${n} раз.`,
+      a2_3:n=>`Гармонизация: намасте на груди + лёгкие прыжки. T3 = ${n} раз.`,
+      a3:'3) ИНТЕГРАЦИЯ ТЕЛА СВЕТА',
+      a3_1:n=>`Круги руками вперёд. C1 = ${n} раз.`,
+      a3_2:n=>`Круги руками назад. C2 = ${n} раз.`,
+      a3_3:n=>`Фиксация: надавливание ладонями в намасте. C3 = ${n} раз.`,
+      codeLine:(ttl,a,b,c)=>`<p><b>${ttl}:</b> <span class="pill">${a}</span> <span class="pill">${b}</span> <span class="pill">${c}</span></p>`,
+      pdfFile:d=>`Kristall_${d}.pdf`,dateLabel:'Дата'},
+  en:{title:'REVEAL YOUR <span class="glow">SOUL CRYSTAL</span>',
+      birthdate:'Birth date',language:'Language',calc:'Calculate',pdf:'Download PDF',
+      vy:v=>`Higher Self Level: ${v}`, codesTitle:'Trinity Codes',
+      torsion:'Torsion Field Activation', light:'Light Body Activation',
+      soul:'Individual Soul Activation', howtoTitle:'Instructions',
+      a1:'1) SOUL CRYSTAL ACTIVATION',
+      a1_1:n=>`“Breathe in Light — breathe out Love”. N1 = ${n} times.`,
+      a1_2:n=>`“Breathe in Power — breathe out Will”. N2 = ${n} times.`,
+      a1_3:n=>`Tap the Thymus with “aa”. N3 = ${n} times.`,
+      a2:'2) TORSION FIELD LAUNCH',
+      a2_1:n=>`Upper vortex (clockwise, hands up). T1 = ${n} times.`,
+      a2_2:n=>`Lower vortex (counter-clockwise, hands down). T2 = ${n} times.`,
+      a2_3:n=>`Harmonization: namaste on chest + jumps. T3 = ${n} times.`,
+      a3:'3) LIGHT BODY INTEGRATION',
+      a3_1:n=>`Both hands circles forward. C1 = ${n} times.`,
+      a3_2:n=>`Both hands circles backward. C2 = ${n} times.`,
+      a3_3:n=>`Fixation: palms press in namaste. C3 = ${n} times.`,
+      codeLine:(ttl,a,b,c)=>`<p><b>${ttl}:</b> <span class="pill">${a}</span> <span class="pill">${b}</span> <span class="pill">${c}</span></p>`,
+      pdfFile:d=>`Crystal_${d}.pdf`,dateLabel:'Date'}
+};
+const T = k => tr[LANG][k];
+const $ = id => document.getElementById(id);
+
+/* парсер даты */
+function parseDate(val){
+  if(!val) return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  if(/^\d{2}\.\d{2}\.\d{4}$/.test(val)){
+    const [dd,mm,yyyy]=val.split('.');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return null;
+}
+
+/* расчёты (как было ранее, тут не меняем) */
+const ds = n => { if(n<=12) return n; let s = [...String(n)].reduce((a,b)=>a+ +b,0);
+  while(s>12) s = [...String(s)].reduce((a,b)=>a+ +b,0); return s; };
+const wrap12 = n => { while(n>12) n-=12; return n; };
+const digitRoot = n => { let s=n; while(s>9) s=[...String(s)].reduce((a,b)=>a+ +b,0); return s; };
+const colorClass = v => `c${v}`;
+
+function buildMatrix(dateISO){
+  const d = new Date(dateISO);
+  const day = d.getUTCDate(), month = d.getUTCMonth()+1, year = d.getUTCFullYear();
+  const sum = n => [...String(n)].reduce((a,b)=>a+ +b,0);
+  const reduce12 = n => { let x=sum(n); while(x>12) x=sum(x); return x; };
+
+  const P1 = reduce12(day);
+  const P2 = reduce12(month);
+  const P3 = reduce12(year);
+  const P4 = wrap12(P1+P2);
+  const P5 = wrap12(P1+P3);
+  const P6 = wrap12(P2+P3);
+  const P7 = digitRoot(P4+P5);
+  const P8 = digitRoot(P4+P6);
+  const P9 = digitRoot(P5+P6);
+  const P10 = P7+P8;
+  const P11 = P9+P7;
+  const P12 = P8+P9;
+  return {P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12};
+}
+
+function computeAll(dateISO){
+  const M = buildMatrix(dateISO);
+  const [y,m,d] = dateISO.split('-').map(Number);
+  const vy = (d%100) + (m%100) + Math.floor(y/100) + Math.floor((y%100)/10) + (y%10);
+
+  const N1 = M.P5, N2 = M.P8, N3 = ds(M.P5+M.P8);
+  const T1 = ds(M.P8+M.P10+M.P12), T2 = ds(M.P1+M.P3+M.P5), T3 = ds(T1+T2);
+  const C1 = ds(M.P2+M.P4+M.P6), C2 = ds(M.P7+M.P9+M.P11), C3 = ds(C1+C2);
+
+  return {M,vy,N1,N2,N3,T1,T2,T3,C1,C2,C3};
+}
+
+function render(dateISO){
+  $('title').innerHTML = tr[LANG].title;
+  $('t_birthdate').textContent = tr[LANG].birthdate;
+  $('t_language').textContent = tr[LANG].language;
+  $('btnCalc').textContent = tr[LANG].calc;
+  $('btnPdf').textContent = tr[LANG].pdf;
+
+  const {M,vy,N1,N2,N3,T1,T2,T3,C1,C2,C3} = computeAll(dateISO);
+
+  $('vyBadge').textContent = tr[LANG].vy(vy);
+
+  const order = [
+    ['P10',M.P10],['P11',M.P11],['P12',M.P12],
+    ['P7',M.P7],['P8',M.P8],['P9',M.P9],
+    ['P4',M.P4],['P5',M.P5],['P6',M.P6],
+    ['P1',M.P1],['P2',M.P2],['P3',M.P3],
+  ];
+  $('matrix').innerHTML = order.map(([,v])=>`<div class="cell ${colorClass(v)}">${v}</div>`).join('');
+
+  $('codes').innerHTML = `
+    <h3>${tr[LANG].codesTitle}</h3>
+    ${tr[LANG].codeLine(tr[LANG].torsion, T1,T2,T3)}
+    ${tr[LANG].codeLine(tr[LANG].light,   C2,C1,C3)}
+    ${tr[LANG].codeLine(tr[LANG].soul,    M.P3, M.P5, M.P11)}
+  `;
+
+  $('howto').innerHTML = `
+    <h3>${tr[LANG].howtoTitle}</h3>
+    <p><b>${tr[LANG].a1}</b><br>${tr[LANG].a1_1(N1)}<br>${tr[LANG].a1_2(N2)}<br>${tr[LANG].a1_3(N3)}</p>
+    <p><b>${tr[LANG].a2}</b><br>${tr[LANG].a2_1(T1)}<br>${tr[LANG].a2_2(T2)}<br>${tr[LANG].a2_3(T3)}</p>
+    <p><b>${tr[LANG].a3}</b><br>${tr[LANG].a3_1(C1)}<br>${tr[LANG].a3_2(C2)}<br>${tr[LANG].a3_3(C3)}</p>
+  `;
+}
+
+/* события */
+function doCalc(){
+  const iso = parseDate($('date').value);
+  if(!iso){ alert(LANG==='ru'?'Введите дату':'Enter date'); return; }
+  localStorage.setItem('kristall_date', iso);
+  render(iso);
+}
+$('btnCalc').addEventListener('click', doCalc);
+$('lang').addEventListener('change', ()=>{
+  LANG = $('lang').value;
+  localStorage.setItem('kristall_lang', LANG);
+});
+
+/* авто */
+(function boot(){
+  LANG = localStorage.getItem('kristall_lang') ||
+         ((navigator.language||'en').toLowerCase().startsWith('ru') ? 'ru' : 'en');
+  $('lang').value = LANG;
+  $('title').innerHTML = tr[LANG].title;
+  $('t_birthdate').textContent = tr[LANG].birthdate;
+  $('t_language').textContent = tr[LANG].language;
+  $('btnCalc').textContent = tr[LANG].calc;
+  $('btnPdf').textContent = tr[LANG].pdf;
+})();
+</script>
+</body>
+</html>
