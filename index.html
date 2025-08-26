@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кристалл Души — Калькулятор</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f1220;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 { margin: 20px 0; }
+    .panel {
+      background: #1d2238;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      margin: 10px auto;
+    }
+    .controls {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input, select, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+    button { cursor: pointer; }
+    button.primary { background: #1e88e5; color: white; }
+    button.secondary { background: #666; color: white; }
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 10px;
+    }
+    .codes {
+      margin: 20px auto;
+      padding: 15px;
+      background: #1d2238;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+    }
+    .instruction {
+      text-align: left;
+      margin: 20px auto;
+      background: #1d2238;
+      padding: 15px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Кристалл Души — Калькулятор</h1>
+  <div class="panel">
+    <div class="controls">
+      <input type="date" id="birthdate">
+      <select id="language">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+      </select>
+      <button class="primary" onclick="calculate()">Рассчитать</button>
+      <button class="secondary" onclick="downloadPDF()">Скачать PDF</button>
+    </div>
+    <div id="vy"></div>
+    <div class="matrix" id="matrix"></div>
+    <div class="codes" id="codes"></div>
+    <div class="instruction" id="instruction"></div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const colors = {
+    1: "#ff4d4d", 2: "#ff944d", 3: "#ffd633",
+    4: "#99ff66", 5: "#1e824c", 6: "#40e0d0",
+    7: "#3399ff", 8: "#66ccff", 9: "#cc66ff",
+    10: "#cc99ff", 11: "#ff4da6", 12: "#ffb6c1"
+  };
+
+  function reduce12(n) {
+    while (n > 12) n = [...n.toString()].reduce((a,b)=>a+ +b,0);
+    return n;
+  }
+
+  function calculate() {
+    let dateInput = document.getElementById("birthdate").value;
+    if (!dateInput) return alert("Выберите дату рождения!");
+    let d = new Date(dateInput);
+    let day = d.getDate();
+    let month = d.getMonth() + 1;
+    let year = d.getFullYear();
+    let yearSum = [...year.toString()].reduce((a,b)=>a+ +b,0);
+
+    // Матрица 12 позиций
+    let p1 = reduce12(day);
+    let p2 = reduce12(month);
+    let p3 = reduce12(yearSum);
+    let p4 = reduce12(p1+p2);
+    let p5 = reduce12(p1+p3);
+    let p6 = reduce12(p2+p3);
+    let p7 = reduce12(p4+p5);
+    let p8 = reduce12(p4+p6);
+    let p9 = reduce12(p5+p6);
+    let p10 = reduce12(p7+p8);
+    let p11 = reduce12(p7+p9);
+    let p12 = reduce12(p8+p9);
+
+    let positions = [p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12];
+
+    // ВЯ
+    let vy = day + month + yearSum;
+    document.getElementById("vy").innerHTML = `<h3>Уровень Высшего Я: ${vy}</h3>`;
+
+    // Отрисовка матрицы
+    let matrix = document.getElementById("matrix");
+    matrix.innerHTML = "";
+    positions.forEach((val,i)=>{
+      let div = document.createElement("div");
+      div.className="cell";
+      div.style.background=colors[val];
+      div.innerText=val;
+      matrix.appendChild(div);
+    });
+
+    // Троичные коды
+    let torsion = [p7,p4,p11];
+    let light = [p5,p8,p4];
+    let soul = [p3,p5,p11];
+
+    document.getElementById("codes").innerHTML = `
+      <b>Троичные коды:</b><br>
+      Активация торсионного поля: ${torsion.join(", ")}<br>
+      Активация тела света: ${light.join(", ")}<br>
+      Активация индивидуальной души: ${soul.join(", ")}
+    `;
+
+    // Инструкция (RU/EN)
+    let lang = document.getElementById("language").value;
+    let instr = {
+      ru: `
+      <h3>Инструкция к кодам</h3>
+      <b>1. Активация Кристалла Души</b><br>
+      • «Вдыхаю Свет — Выдыхаю Любовь»: ладони в намасте, вдох из центра головы в Высшее сердце, выдох с раскрытием рук и золотым светом. N1 = ${p8} раз.<br>
+      • «Вдыхаю Силу — Выдыхаю Волю»: вдох из солнечного сплетения в Тимус, выдох золотого света. N2 = ${p5} раз.<br>
+      • Простукивание точки Тимуса со звуком «аа». N3 = ${reduce12(p5+p8)} раз.<br><br>
+      <b>2. Запуск торсионного поля</b><br>
+      • Верхняя воронка (руки вверх, по часовой стрелке). T1 = ${reduce12(p10+p8+p12)} раз.<br>
+      • Нижняя воронка (руки вниз, против часовой). T2 = ${reduce12(p1+p3+p5)} раз.<br>
+      • Гармонизация (руки в намасте, прыжки). T3 = ${reduce12(reduce12(p10+p8+p12)+reduce12(p1+p3+p5))} раз.<br><br>
+      <b>3. Интеграция Тела Света</b><br>
+      • Круги руками вперёд. C1 = ${reduce12(p2+p4+p6)} раз.<br>
+      • Круги руками назад. C2 = ${reduce12(p7+p9+p11)} раз.<br>
+      • Фиксация (надавливание ладонями в намасте). C3 = ${reduce12(reduce12(p2+p4+p6)+reduce12(p7+p9+p11))} раз.
+      `,
+      en: `
+      <h3>Instruction for Codes</h3>
+      <b>1. Activation of the Soul Crystal</b><br>
+      • “I inhale Light — I exhale Love”: palms in namaste, inhale from the head center into the Higher Heart, exhale with arms open radiating golden light. N1 = ${p8} times.<br>
+      • “I inhale Power — I exhale Will”: inhale from the solar plexus into the Thymus, exhale golden light. N2 = ${p5} times.<br>
+      • Tapping the Thymus point with sound “aa”. N3 = ${reduce12(p5+p8)} times.<br><br>
+      <b>2. Launch of the Torsion Field</b><br>
+      • Upper vortex (hands up, clockwise). T1 = ${reduce12(p10+p8+p12)} times.<br>
+      • Lower vortex (hands down, counterclockwise). T2 = ${reduce12(p1+p3+p5)} times.<br>
+      • Harmonization (hands in namaste, jumps). T3 = ${reduce12(reduce12(p10+p8+p12)+reduce12(p1+p3+p5))} times.<br><br>
+      <b>3. Integration of the Body of Light</b><br>
+      • Circles with hands forward. C1 = ${reduce12(p2+p4+p6)} times.<br>
+      • Circles with hands backward. C2 = ${reduce12(p7+p9+p11)} times.<br>
+      • Fixation (pressing palms in namaste). C3 = ${reduce12(reduce12(p2+p4+p6)+reduce12(p7+p9+p11))} times.
+      `
+    };
+
+    document.getElementById("instruction").innerHTML = instr[lang];
+  }
+
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text(document.getElementById("instruction").innerText, 10, 20);
+    doc.save("soul_crystal.pdf");
+  }
+</script>
+</body>
+</html>
