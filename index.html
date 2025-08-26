@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>РАСКРОЙ СВОЙ КРИСТАЛЛ ДУШИ</title>
+  <style>
+    :root{--panel:#131937;--ink:#fff;--muted:#a9b6d3}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial,sans-serif;
+         background:#0f1220;color:var(--ink);text-align:center}
+    .wrap{max-width:960px;margin:auto;padding:20px}
+    h1{margin:8px 0 16px;font-size:28px;font-weight:700}
+    .highlight{
+      color:#ffd966;
+      text-shadow:0 0 6px #ffecb3,0 0 12px #ffd966,0 0 20px #ffcc33;
+    }
+    .controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+    label{background:var(--panel);padding:10px;border-radius:10px}
+    input,select,button{padding:10px;font-size:16px;border-radius:8px;border:1px solid #42507a;background:#0f1220;color:var(--ink)}
+    button{cursor:pointer}
+    button.primary{background:#2d6ae0;border:none}
+    button.secondary{background:#42507a;border:none}
+    .badge{display:inline-block;background:#243058;border:1px solid #34406a;border-radius:999px;padding:8px 14px;margin:6px 0}
+    .matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:14px auto}
+    .cell{padding:28px 0;border-radius:12px;font-weight:800;font-size:22px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+    .card{background:var(--panel);padding:16px;border-radius:12px;margin:18px auto;text-align:left;max-width:720px}
+    .card h3{margin:6px 0 12px;text-align:center}
+    .codes p{margin:8px 0}
+    .howto b{display:block;margin-top:8px}
+    .muted{color:var(--muted)}
+  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="t_title">
+    РАСКРОЙ СВОЙ <span class="highlight">КРИСТАЛЛ ДУШИ</span>
+  </h1>
+
+  <div class="controls">
+    <label><span id="t_birthdate">Дата рождения</span>:
+      <input type="date" id="date">
+    </label>
+    <label><span id="t_language">Язык</span>:
+      <select id="lang">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+      </select>
+    </label>
+    <button class="primary" id="calcBtn">Рассчитать</button>
+    <button class="secondary" id="pdfBtn">Скачать PDF</button>
+  </div>
+
+  <div class="badge" id="vy"></div>
+  <div class="matrix" id="matrix"></div>
+  <div class="card codes" id="codes"></div>
+  <div class="card howto" id="howto"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let LANG="ru";
+const dict={
+  ru:{ title:`РАСКРОЙ СВОЙ <span class="highlight">КРИСТАЛЛ ДУШИ</span>`, birthdate:"Дата рождения",language:"Язык",calcBtn:"Рассчитать",pdfBtn:"Скачать PDF",
+       vy:v=>`Уровень Высшего Я: ${v}`,codesTitle:"Троичные коды",torsion:"Активация торсионного поля",light:"Активация тела света",soul:"Активация индивидуальной души",
+       howtoTitle:"Инструкция к кодам",act1:"Активация Кристалла Души",act1a:"«Вдыхаю Свет — Выдыхаю Любовь»",act1b:"«Вдыхаю Силу — Выдыхаю Волю»",act1c:"Простукивание точки Тимуса",
+       act2:"Запуск торсионного поля",act2a:"Верхняя воронка (руки вверх, по часовой)",act2b:"Нижняя воронка (руки вниз, против часовой)",act2c:"Гармонизация (руки в намасте, прыжки)",
+       act3:"Интеграция Тела Света",act3a:"Круги руками вперёд",act3b:"Круги руками назад",act3c:"Фиксация (ладони в намасте, надавливание)",times:"раз",pdfFile:d=>`Kristall_${d}.pdf`,dateLabel:"Дата"},
+  en:{ title:`REVEAL YOUR <span class="highlight">SOUL CRYSTAL</span>`, birthdate:"Birth date",language:"Language",calcBtn:"Calculate",pdfBtn:"Download PDF",
+       vy:v=>`Higher Self Level: ${v}`,codesTitle:"Trinity Codes",torsion:"Torsion field activation",light:"Light body activation",soul:"Individual soul activation",
+       howtoTitle:"Instruction",act1:"Soul Crystal Activation",act1a:"“I breathe in Light — I breathe out Love”",act1b:"“I breathe in Power — I breathe out Will”",act1c:"Tapping the Thymus point",
+       act2:"Torsion Field Launch",act2a:"Upper vortex (hands up, clockwise)",act2b:"Lower vortex (hands down, counterclockwise)",act2c:"Harmonization (hands in namaste, jumps)",
+       act3:"Integration of the Body of Light",act3a:"Circles with hands forward",act3b:"Circles with hands back",act3c:"Fixation (palms in namaste, pressing)",times:"times",pdfFile:d=>`Crystal_${d}.pdf`,dateLabel:"Date"}
+};
+const t=k=>dict[LANG][k];
+
+// дальше — тот же JS (расчёты, матрица, PDF), только при выводе заголовка используем innerHTML
+function calc(){
+  const el=$("date");if(!el.value)el.value=new Date().toISOString().slice(0,10);
+  $("t_title").innerHTML=t('title'); // <-- теперь заголовок с подсветкой
+}
+(function init(){
+  const user=(navigator.language||'en').toLowerCase();LANG=user.startsWith('ru')?'ru':'en';$("lang").value=LANG;calc();
+})();
+$("lang").addEventListener("change",()=>{LANG=$("lang").value;calc();});
+</script>
+</body>
+</html>
